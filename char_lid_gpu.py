@@ -14,7 +14,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("..............device", device)
 
 parser = argparse.ArgumentParser(description="CHARLID")
-parser.add_argument('--gpus', nargs='+', type=str, help='gpus')
+parser.add_argument('--gpus', type=str, help='gpus')
 parser.add_argument('--batch_size', type=int, default=100, help='batch size for training')
 parser.add_argument('--exp_dir', type=str, default='log', help='directory of log')
 parser.add_argument('--h', type=int, default=28, help='height of input images')
@@ -24,7 +24,7 @@ parser.add_argument('--version', type=int, default=0, help='experiment version')
 args = parser.parse_args()
 
 torch.manual_seed(2021)
-
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
 torch.backends.cudnn.enabled = True # make sure to use cudnn for computational performance
 torch.set_printoptions(precision=8)
 dataset = "mnist"
