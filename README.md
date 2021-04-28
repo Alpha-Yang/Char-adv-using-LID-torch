@@ -28,19 +28,19 @@ self.layer1 = nn.Sequential(
             nn.BatchNorm2d(feature_num),
             nn.ReLU()
         )
-        self.layer2 = nn.Sequential(
+self.layer2 = nn.Sequential(
             nn.Conv2d(in_channels = feature_num, out_channels = feature_num, kernel_size=3),
             nn.BatchNorm2d(feature_num),
             nn.ReLU()
         )
-        self.layer3 = nn.Sequential(
+self.layer3 = nn.Sequential(
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout(0.5),  
             nn.Flatten(),  
             nn.Linear(feature_num_fc, feature_num_x2),            
             nn.ReLU()
         )
-        self.layer4 = nn.Sequential(
+self.layer4 = nn.Sequential(
             nn.BatchNorm1d(feature_num_x2), 
             nn.Dropout(0.5),  
             nn.Linear(feature_num_x2, label_num)
@@ -64,3 +64,32 @@ After you run this script,  you will see that `log.txt` can be finded in the fol
 
 ![](assets/resultlid.png)
 
+### Updating Faster Version
+
+2021.4.28 update
+
+However, if you have read this code, you will find that we have use torch.Tensor to construct our model, but we estimate LID by numpy. And we know that torch.Tensor is on GPU while numpy is on CPU. So it is very wasting time when our computer transforms from gpu to cpu. 
+
+And this version code have changed this. Because we dont have some functions of numpy in torch, I have to write them in the same way, and the same problem has happened in precision of float.
+
+You can also cd into the folder, and running the script like this below.
+
+```shell
+python char_lid_gpu.py --gpus 0
+                       --batch_size 100
+                       --exp_dir log
+                       --version 0
+```
+
+After you run this script,  you will see that `log_gpu.txt` can be finded in the folder of `log/version_0/`. And `log_gpu.txt` includes 100 batches (because testing folder has 10,000 examples) of LID, each batch LID has the shape of (100, 4). This part is same as that above.
+
+### Time Comparison of two versions
+
+In order to compare the time cost of two versions, I add `import time` module to check whether my code have speeded up our programs. You can find such results in `log.txt` and `log_gpu.txt`.
+
+```shell
+Time cost of original version = 54.815575s
+Time cost of faster version = 4.255472s
+```
+
+As you see, this is very amazing. After we changed our codes, we have speeded up by 50s to the original version. 

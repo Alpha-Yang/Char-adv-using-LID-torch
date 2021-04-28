@@ -10306,3 +10306,4 @@ LID of batch 100 in testing:
  [12.38909734 14.62877564 18.10030312  4.47805092]]
 The shape of batch 100 is:  (100, 4)
 --------------------------------------------------
+Time cost of original version = 54.815575s

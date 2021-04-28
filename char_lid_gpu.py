@@ -26,7 +26,7 @@ args = parser.parse_args()
 torch.manual_seed(2021)
 
 torch.backends.cudnn.enabled = True # make sure to use cudnn for computational performance
-
+torch.set_printoptions(precision=8)
 dataset = "mnist"
 
 print('Data set: %s' % dataset)
@@ -51,11 +51,12 @@ if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
 orig_stdout = sys.stdout
-f = open(os.path.join(log_dir, 'log.txt'),'w')
+f = open(os.path.join(log_dir, 'log_gpus.txt'),'w')
 sys.stdout= f
 
 for arg in vars(args):
     print(arg, getattr(args, arg))
+print("This is a version extracting LID which doesnt need transform GPU to CPU.")
 print("-" * 50)
 
 import time
@@ -63,24 +64,18 @@ start = time.time()
 
 # lid of a batch of query points X
 def mle_batch(data, batch, k):
-    data = np.asarray(data, dtype=np.float32)
-    batch = np.asarray(batch, dtype=np.float32)
-
     k = min(k, len(data)-1)
-    f = lambda v: - k / np.sum(np.log(v/v[-1]))
-    a = cdist(batch, data)
-    a = np.apply_along_axis(np.sort, axis=1, arr=a)[:,1:k+1]
-    a = np.apply_along_axis(f, axis=1, arr=a)
+    f = lambda v: - k / torch.sum(torch.log(v/v[-1]))
+    a = torch.cdist(batch, data)
+    a, _ = torch.sort(a, dim=1)
+    a = a[:,1:k+1]
+    a = torch.stack([f(x) for x in torch.unbind(a, dim=0)])
     return a
 
 def estimate(i_batch, lid_dim, n_feed, funcs):
-    # start = i_batch * args.batch_size
-    # end = np.minimum(len(X), (i_batch + 1) * args.batch_size)
-    # n_feed = end - start
-    lid_batch = np.zeros(shape=(n_feed, lid_dim))
+    lid_batch = torch.zeros(n_feed, lid_dim, dtype=torch.float64)
     for i, func in enumerate(funcs):
-        X_act = func.detach().cpu().numpy()
-        X_act = np.asarray(X_act, dtype=np.float32).reshape((n_feed, -1))
+        X_act = func.reshape(n_feed, -1)
         # print("X_act: ", X_act.shape)
 
         # random clean samples
@@ -101,7 +96,7 @@ for batch_idx, (x, y) in enumerate(test_loader):
     print("-" * 50)
 
 end = time.time()
-print('Time cost of original version = %fs' % (end - start))
+print('Time cost of faster version = %fs' % (end - start))
 
 sys.stdout = orig_stdout
 f.close()
