@@ -9,10 +9,6 @@ from scipy.spatial.distance import pdist, cdist, squareform
 from model import AutoEncoderUnet
 import argparse
 
-print("--------------PyTorch VERSION:", torch.__version__)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("..............device", device)
-
 parser = argparse.ArgumentParser(description="CHARLID")
 parser.add_argument('--gpus', type=str, help='gpus')
 parser.add_argument('--batch_size', type=int, default=100, help='batch size for training')
@@ -23,8 +19,13 @@ parser.add_argument('--c', type=int, default=1, help='channel of input images')
 parser.add_argument('--version', type=int, default=0, help='experiment version')
 args = parser.parse_args()
 
-torch.manual_seed(2021)
+print("--------------PyTorch VERSION:", torch.__version__)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
+print("..............device", device)
+
+torch.manual_seed(2021)
+
 torch.backends.cudnn.enabled = True # make sure to use cudnn for computational performance
 torch.set_printoptions(precision=8)
 dataset = "mnist"
