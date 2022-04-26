@@ -1,4 +1,4 @@
-# Char-adv-using-LID-torch
+# Char-adv-using-LID-torch SXC
 There are my Pytorch codes for charactering adversarial subspace using local intrinsic dimensionality.
 
 My related zhihu page is [[here](https://zhuanlan.zhihu.com/p/365307057)]. You will find more in this page.
